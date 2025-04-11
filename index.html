@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cyclic Counter Assignment</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family:
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          Roboto,
+          Oxygen,
+          Ubuntu,
+          Cantarell,
+          sans-serif;
+        background-color: #f9f9f9;
+        color: #333;
+        line-height: 1.6;
+        padding: 15px;
+        max-width: 600px;
+        margin: 0 auto;
+      }
+
+      h1 {
+        font-size: 24px;
+        margin-bottom: 15px;
+        color: #2c3e50;
+        text-align: center;
+      }
+
+      .form-group {
+        margin-bottom: 12px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 3px;
+        font-weight: 500;
+        font-size: 14px;
+      }
+
+      input[type="number"],
+      input[type="text"] {
+        width: 100%;
+        padding: 8px 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 16px;
+      }
+
+      button {
+        background-color: #3498db;
+        color: white;
+        border: none;
+        padding: 10px;
+        font-size: 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        width: 100%;
+        margin: 15px 0;
+      }
+
+      button:hover {
+        background-color: #2980b9;
+      }
+
+      .results-container {
+        margin-top: 20px;
+      }
+
+      .results-title {
+        font-size: 18px;
+        margin-bottom: 10px;
+        padding-bottom: 5px;
+        border-bottom: 1px solid #ddd;
+      }
+
+      .result-list {
+        list-style-type: none;
+      }
+
+      .result-list li {
+        margin-bottom: 10px;
+        line-height: 1.5;
+      }
+
+      .question-number {
+        font-weight: bold;
+        color: #2c3e50;
+      }
+
+      .toggle-container {
+        display: flex;
+        align-items: center;
+        margin: 12px 0;
+      }
+
+      /* Toggle Switch Styles */
+      .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 24px;
+        margin-right: 10px;
+      }
+
+      .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: 0.4s;
+        border-radius: 24px;
+      }
+
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: 0.4s;
+        border-radius: 50%;
+      }
+
+      input:checked + .slider {
+        background-color: #3498db;
+      }
+
+      input:focus + .slider {
+        box-shadow: 0 0 1px #3498db;
+      }
+
+      input:checked + .slider:before {
+        transform: translateX(26px);
+      }
+
+      .empty-state {
+        text-align: center;
+        color: #888;
+        padding: 20px 0;
+      }
+
+      .toggle-label {
+        font-size: 14px;
+        cursor: pointer;
+      }
+
+      .action-buttons {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+      }
+
+      .action-button {
+        flex: 1;
+        background-color: #f0f0f0;
+        color: #333;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 8px 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 14px;
+      }
+
+      .action-button:hover {
+        background-color: #e0e0e0;
+      }
+
+      .notification {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 10px 20px;
+        background-color: rgba(0, 0, 0, 0.7);
+        color: white;
+        border-radius: 5px;
+        font-size: 14px;
+        opacity: 0;
+        transition: opacity 0.3s;
+        z-index: 1000;
+      }
+
+      .notification.show {
+        opacity: 1;
+      }
+    </style>
+  </head>
+
+  <body>
+    <h1>Cyclic Counter Assignment</h1>
+
+    <form id="assignment-form">
+      <div class="form-group">
+        <label for="start-assignee">Start Assignee #</label>
+        <input type="number" id="start-assignee" min="1" value="1" required />
+      </div>
+
+      <div class="form-group">
+        <label for="end-assignee">End Assignee #</label>
+        <input type="number" id="end-assignee" min="1" value="66" required />
+      </div>
+
+      <div class="form-group">
+        <label for="skip-assignees">Skip Assignees (comma-separated)</label>
+        <input
+          type="text"
+          id="skip-assignees"
+          placeholder="e.g. 17, 36"
+          value="17, 36"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="questions-start">Questions Start #</label>
+        <input type="number" id="questions-start" min="1" value="1" required />
+      </div>
+
+      <div class="form-group">
+        <label for="questions-limit">Questions Limit</label>
+        <input type="number" id="questions-limit" min="1" value="10" required />
+      </div>
+
+      <div class="toggle-container">
+        <div class="toggle-switch">
+          <input type="checkbox" id="skip-next-question" checked />
+          <span class="slider"></span>
+        </div>
+        <label for="skip-next-question" class="toggle-label"
+        >Do not assign skipped question to next person</label>
+      </div>
+
+      <button type="submit">Calculate Assignments</button>
+    </form>
+
+    <div class="results-container" id="results">
+      <div class="empty-state">Submit the form to see assignment results</div>
+    </div>
+
+    <div id="notification" class="notification"></div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const form = document.getElementById("assignment-form");
+        const resultsContainer = document.getElementById("results");
+        const notification = document.getElementById("notification");
+        let resultText = "";
+
+        form.addEventListener("submit", function (e) {
+          e.preventDefault();
+
+          // Parse form values
+          const startAssignee = parseInt(
+            document.getElementById("start-assignee").value,
+          );
+          const endAssignee = parseInt(
+            document.getElementById("end-assignee").value,
+          );
+          const skipAssigneesStr = document
+            .getElementById("skip-assignees")
+            .value.trim();
+          const skipAssignees = skipAssigneesStr
+            ? skipAssigneesStr.split(",").map((num) =>
+              parseInt(num.trim())
+            )
+            : [];
+          const shouldNotAssignSkippedQuestionToNext =
+            document.getElementById("skip-next-question").checked;
+          const questionsStart = parseInt(
+            document.getElementById("questions-start").value,
+          );
+          const questionsLimit = parseInt(
+            document.getElementById("questions-limit").value,
+          );
+
+          // Validate inputs
+          if (startAssignee > endAssignee) {
+            showError(
+              "Start assignee must be less than or equal to end assignee",
+            );
+            return;
+          }
+
+          // Calculate the results
+          const results = calc(
+            startAssignee,
+            endAssignee,
+            skipAssignees,
+            shouldNotAssignSkippedQuestionToNext,
+            questionsStart,
+            questionsLimit,
+          );
+
+          // Display the results
+          displayResults(results);
+        });
+
+        function calc(
+          start_assignee = 1,
+          end_assignee = 66,
+          skip_assignees = [17, 36],
+          should_not_assign_skipped_question_to_next = true,
+          questions_start = 1,
+          questions_limit = 10,
+        ) {
+          const result = {};
+          let curr_assignee = start_assignee;
+          let current_question = questions_start;
+
+          while (curr_assignee <= end_assignee) {
+            if (current_question > questions_limit) {
+              current_question = 1;
+            }
+            if (!result[current_question]) {
+              result[current_question] = [];
+            }
+
+            if (skip_assignees.includes(curr_assignee)) {
+              curr_assignee++;
+              if (should_not_assign_skipped_question_to_next) {
+                current_question++;
+              }
+            } else {
+              result[current_question].push(curr_assignee);
+              curr_assignee++;
+              current_question++;
+            }
+          }
+
+          return result;
+        }
+
+        function displayResults(results) {
+          // Sort the questions numerically
+          const sortedQuestions = Object.keys(results).sort(
+            (a, b) => parseInt(a) - parseInt(b),
+          );
+
+          let html = '<div class="results-title">Results</div>';
+          html += '<ul class="result-list">';
+
+          // Build both HTML output and plain text output
+          resultText = "Questions\n";
+
+          sortedQuestions.forEach((question) => {
+            html += `
+              <li>
+                <span class="question-number">Question ${question}:</span> 
+                ${results[question].join(", ")}
+              </li>
+            `;
+
+            resultText += `* Question ${question}: ${
+              results[question].join(
+                ", ",
+              )
+            }\n`;
+          });
+
+          html += "</ul>";
+
+          // Add share and copy buttons
+          html += `
+            <div class="action-buttons">
+              <button type="button" class="action-button" id="copy-button">Copy Results</button>
+              <button type="button" class="action-button" id="share-button">Share Results</button>
+            </div>
+          `;
+
+          resultsContainer.innerHTML = html;
+
+          // Add event listeners to the buttons
+          document
+            .getElementById("copy-button")
+            .addEventListener("click", copyResults);
+          document
+            .getElementById("share-button")
+            .addEventListener("click", shareResults);
+
+          // Scroll to results
+          resultsContainer.scrollIntoView({ behavior: "smooth" });
+        }
+
+        function copyResults() {
+          if (!resultText) {
+            showNotification("No results to copy");
+            return;
+          }
+
+          navigator.clipboard
+            .writeText(resultText)
+            .then(() => {
+              showNotification("Results copied to clipboard");
+            })
+            .catch((err) => {
+              showNotification(
+                "Failed to copy results: " + err.message,
+              );
+              console.error("Failed to copy text: ", err);
+            });
+        }
+
+        function shareResults() {
+          if (!resultText) {
+            showNotification("No results to share");
+            return;
+          }
+
+          if (navigator.share) {
+            navigator
+              .share({
+                title: "Cyclic Counter Assignment Results",
+                text: resultText,
+              })
+              .then(() => {
+                showNotification("Shared successfully");
+              })
+              .catch((err) => {
+                if (err.name !== "AbortError") {
+                  // Don't show error for user cancellations
+                  showNotification("Failed to share: " + err.message);
+                  console.error("Error sharing: ", err);
+                }
+              });
+          } else {
+            showNotification(
+              "Web Share API not supported in your browser",
+            );
+            console.warn("Web Share API not available");
+          }
+        }
+
+        function showNotification(message) {
+          notification.textContent = message;
+          notification.classList.add("show");
+
+          // Hide notification after 3 seconds
+          setTimeout(() => {
+            notification.classList.remove("show");
+          }, 3000);
+        }
+
+        function showError(message) {
+          resultsContainer.innerHTML = `
+            <div style="color: #e74c3c; text-align: center; padding: 10px;">
+              ${message}
+            </div>
+          `;
+        }
+      });
+    </script>
+  </body>
+</html>
